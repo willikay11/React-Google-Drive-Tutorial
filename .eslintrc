@@ -1,0 +1,21 @@
+{
+  "env": {
+    // don't use commonJS variables, use import over require
+    "commonjs": false,
+    "es6": true,
+    "node": true,
+    "browser": true,
+    "jest": true
+  },
+  // import plugin and reports any imports that come after non imports statements
+  "plugins": ["import"],
+  "extends": ["plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "parser": "babel-eslint",
+  "rules": {
+    "no-console": "error"
+  }
+}
