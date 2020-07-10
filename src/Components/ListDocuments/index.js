@@ -32,7 +32,7 @@ const columns = [
     ),
   },
 ];
-const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUser, onSignOut }) => {
+const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUser, onSignOut, isLoading }) => {
   const search = (value) => {
     delayedQuery(value);
   };
@@ -77,6 +77,7 @@ const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUse
             columns={columns}
             dataSource={documents}
             pagination={{ simple: true }}
+            loading={isLoading}
           />
         </Col>
       </Row>

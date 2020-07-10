@@ -24,8 +24,8 @@ const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 const SelectSource = () => {
   const [listDocumentsVisible, setListDocumentsVisibility] = useState(false);
   const [documents, setDocuments] = useState([]);
-  const [nextPageToken, setNextPageToken] = useState();
   const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
+  const [isFetchingGoogleDriveFiles, setIsFetchingGoogleDriveFiles] = useState(false);
   const [signedInUser, setSignedInUser] = useState();
   const handleChange = (file) => {};
 
@@ -33,7 +33,7 @@ const SelectSource = () => {
    * Print files.
    */
   const listFiles = (searchTerm = null) => {
-    setIsLoadingGoogleDriveApi(true);
+    setIsFetchingGoogleDriveFiles(true);
     gapi.client.drive.files
       .list({
         pageSize: 10,
@@ -41,11 +41,10 @@ const SelectSource = () => {
         q: searchTerm !== null ? `name contains '${searchTerm}'` : '',
       })
       .then(function (response) {
-        setIsLoadingGoogleDriveApi(false);
+        setIsFetchingGoogleDriveFiles(false);
         setListDocumentsVisibility(true);
         const res = JSON.parse(response.body);
         setDocuments(res.files);
-        setNextPageToken(res.nextPageToken);
       });
   };
 
@@ -64,6 +63,7 @@ const SelectSource = () => {
     if (isSignedIn) {
       // Set the signed in user
       setSignedInUser(gapi.auth2.getAuthInstance().currentUser.je.Qt);
+      setIsLoadingGoogleDriveApi(false);
       // list files is user is authenticated
       listFiles();
     } else {
@@ -76,6 +76,7 @@ const SelectSource = () => {
    *  Sign out the user upon button click.
    */
   const handleSignOutClick = (event) => {
+    setListDocumentsVisibility(false);
     gapi.auth2.getAuthInstance().signOut();
   };
 
@@ -84,6 +85,7 @@ const SelectSource = () => {
    *  listeners.
    */
   const initClient = () => {
+    setIsLoadingGoogleDriveApi(true);
     gapi.client
       .init({
         apiKey: API_KEY,
@@ -125,6 +127,7 @@ const SelectSource = () => {
           onSearch={listFiles}
           signedInUser={signedInUser}
           onSignOut={handleSignOutClick}
+          isLoading={isFetchingGoogleDriveFiles}
         />
         <Col span={8}>
           <Spin spinning={isLoadingGoogleDriveApi} style={{ width: '100%' }}>
