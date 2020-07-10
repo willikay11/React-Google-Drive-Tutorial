@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import moment from 'moment';
+import { debounce } from 'lodash';
+
 import { Col, Drawer, Row, Button, Input, Table, Tooltip } from 'antd';
+const { Search } = Input;
 
 const columns = [
   {
@@ -29,7 +32,16 @@ const columns = [
     ),
   },
 ];
-const ListDocuments = ({ visible, onClose, documents = [] }) => {
+const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUser, onSignOut }) => {
+  const search = (value) => {
+    delayedQuery(value);
+  };
+
+  const delayedQuery = useCallback(
+    debounce((q) => onSearch(q), 500),
+    []
+  );
+
   return (
     <Drawer
       title="Select Google Drive Document"
@@ -41,12 +53,31 @@ const ListDocuments = ({ visible, onClose, documents = [] }) => {
     >
       <Row gutter={16}>
         <Col span={24}>
+          <div style={{ marginBottom: 20 }}>
+            <p>Signed In as: {`${signedInUser?.Ad} (${signedInUser?.zu})`}</p>
+            <Button type="primary" onClick={onSignOut}>
+              Sign Out
+            </Button>
+          </div>
+
           <div className="table-card-actions-container">
             <div className="table-search-container">
-              <Input placeholder="Search Google Drive" className="table-search-input" />
+              <Search
+                placeholder="Search Google Drive"
+                onChange={(e) => search(e.target.value)}
+                onSearch={(value) => search(value)}
+                className="table-search-input"
+                size="large"
+                enterButton
+              />
             </div>
           </div>
-          <Table className="table-striped-rows" columns={columns} dataSource={documents} />
+          <Table
+            className="table-striped-rows"
+            columns={columns}
+            dataSource={documents}
+            pagination={{ simple: true }}
+          />
         </Col>
       </Row>
     </Drawer>

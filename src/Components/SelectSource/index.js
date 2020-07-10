@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Col } from 'antd';
+import { Row, Col, Spin } from 'antd';
 import styled from 'styled-components';
 import { gapi } from 'gapi-script';
 import GoogleDriveImage from '../../assets/images/google-drive.png';
@@ -24,21 +24,28 @@ const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 const SelectSource = () => {
   const [listDocumentsVisible, setListDocumentsVisibility] = useState(false);
   const [documents, setDocuments] = useState([]);
+  const [nextPageToken, setNextPageToken] = useState();
+  const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
+  const [signedInUser, setSignedInUser] = useState();
   const handleChange = (file) => {};
 
   /**
    * Print files.
    */
-  const listFiles = () => {
+  const listFiles = (searchTerm = null) => {
+    setIsLoadingGoogleDriveApi(true);
     gapi.client.drive.files
       .list({
         pageSize: 10,
         fields: 'nextPageToken, files(id, name, mimeType, modifiedTime)',
+        q: searchTerm !== null ? `name contains '${searchTerm}'` : '',
       })
       .then(function (response) {
+        setIsLoadingGoogleDriveApi(false);
         setListDocumentsVisibility(true);
-        const docs = JSON.parse(response.body).files;
-        setDocuments(docs);
+        const res = JSON.parse(response.body);
+        setDocuments(res.files);
+        setNextPageToken(res.nextPageToken);
       });
   };
 
@@ -55,6 +62,8 @@ const SelectSource = () => {
    */
   const updateSigninStatus = (isSignedIn) => {
     if (isSignedIn) {
+      // Set the signed in user
+      setSignedInUser(gapi.auth2.getAuthInstance().currentUser.je.Qt);
       // list files is user is authenticated
       listFiles();
     } else {
@@ -66,7 +75,7 @@ const SelectSource = () => {
   /**
    *  Sign out the user upon button click.
    */
-  const handleSignoutClick = (event) => {
+  const handleSignOutClick = (event) => {
     gapi.auth2.getAuthInstance().signOut();
   };
 
@@ -109,20 +118,28 @@ const SelectSource = () => {
   return (
     <NewDocumentWrapper>
       <Row gutter={16} className="custom-row">
-        <ListDocuments visible={listDocumentsVisible} onClose={onClose} documents={documents} />
-        <Col span={8} onClick={() => handleClientLoad()}>
-          <div className="source-container">
-            <div className="icon-container">
-              <div className="icon icon-success">
-                <img height="80" width="80" src={GoogleDriveImage} />
+        <ListDocuments
+          visible={listDocumentsVisible}
+          onClose={onClose}
+          documents={documents}
+          onSearch={listFiles}
+          signedInUser={signedInUser}
+          onSignOut={handleSignOutClick}
+        />
+        <Col span={8}>
+          <Spin spinning={isLoadingGoogleDriveApi} style={{ width: '100%' }}>
+            <div onClick={() => handleClientLoad()} className="source-container">
+              <div className="icon-container">
+                <div className="icon icon-success">
+                  <img height="80" width="80" src={GoogleDriveImage} />
+                </div>
+              </div>
+              <div className="content-container">
+                <p className="title">Google Drive</p>
+                <span className="content">Import documents straight from your google drive</span>
               </div>
             </div>
-            <div className="content-container">
-              <p className="title">Google Drive</p>
-              <span className="content">Import documents straight from your google drive</span>
-              <span>Signed in as:</span>
-            </div>
-          </div>
+          </Spin>
         </Col>
       </Row>
     </NewDocumentWrapper>
