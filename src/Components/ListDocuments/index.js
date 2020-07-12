@@ -34,7 +34,7 @@ const columns = [
 ];
 const ListDocuments = ({ visible, onClose, documents = [], onSearch, signedInUser, onSignOut, isLoading }) => {
   const search = (value) => {
-    delayedQuery(value);
+    delayedQuery(`name contains '${value}'`);
   };
 
   const delayedQuery = useCallback(
