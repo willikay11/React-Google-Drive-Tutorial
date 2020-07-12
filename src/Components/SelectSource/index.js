@@ -14,7 +14,7 @@ const NewDocumentWrapper = styled.div`
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_DRIVE_CLIENT_ID;
 const API_KEY = process.env.REACT_APP_GOOGLE_DRIVE_API_KEY;
 
-// Array of API discovery doc URLs for APIs used by the quickstart
+// Array of API discovery doc URLs for APIs
 const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
 
 // Authorization scopes required by the API; multiple scopes can be
@@ -38,7 +38,7 @@ const SelectSource = () => {
       .list({
         pageSize: 10,
         fields: 'nextPageToken, files(id, name, mimeType, modifiedTime)',
-        q: searchTerm !== null ? `name contains '${searchTerm}'` : '',
+        q: searchTerm,
       })
       .then(function (response) {
         setIsFetchingGoogleDriveFiles(false);
@@ -64,7 +64,7 @@ const SelectSource = () => {
       // Set the signed in user
       setSignedInUser(gapi.auth2.getAuthInstance().currentUser.je.Qt);
       setIsLoadingGoogleDriveApi(false);
-      // list files is user is authenticated
+      // list files if user is authenticated
       listFiles();
     } else {
       // prompt user to sign in
